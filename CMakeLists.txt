@@ -1,0 +1,85 @@
+cmake_minimum_required(VERSION 3.21)
+set(PROJECT_TARGET vmsift)
+project(${PROJECT_TARGET} C)
+
+set(CMAKE_C_STANDARD 17)
+set(CMAKE_VERBOSE_MAKEFILE ON)
+
+# ---- BUILDS ---- #
+
+# Build Types
+set(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE}
+        CACHE STRING "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel tsan asan lsan msan ubsan"
+        FORCE)
+
+# Release
+set(CMAKE_C_FLAGS_RELEASE
+        "-O3 -pthread -lm"
+        CACHE STRING "Flags used by the C compile during release builds."
+        FORCE)
+
+# Debug
+set(CMAKE_C_FLAGS_DEBUG
+        "-O0 -Wall -pthread -lm -g -fno-omit-frame-pointer"
+        CACHE STRING "Flags used by the C compile during release builds."
+        FORCE)
+
+# ThreadSanitizer
+set(CMAKE_C_FLAGS_TSAN
+        "-fsanitize=thread -Wall -g -pthread -lm -O1 -g -fno-omit-frame-pointer"
+        CACHE STRING "Flags used by the C compiler during ThreadSanitizer builds."
+        FORCE)
+
+# AddressSanitize
+set(CMAKE_C_FLAGS_ASAN
+        "-fsanitize=address -Wall -fno-optimize-sibling-calls -fsanitize-address-use-after-scope -fno-omit-frame-pointer -g -O1 -pthread -lm"
+        CACHE STRING "Flags used by the C compiler during AddressSanitizer builds."
+        FORCE)
+
+# LeakSanitizer
+set(CMAKE_C_FLAGS_LSAN
+        "-fsanitize=leak -Wall -fno-omit-frame-pointer -g -O1 -pthread -lm"
+        CACHE STRING "Flags used by the C compiler during LeakSanitizer builds."
+        FORCE)
+
+# MemorySanitizer
+set(CMAKE_C_FLAGS_MSAN
+        "-fsanitize=memory -Wall -fno-optimize-sibling-calls -fsanitize-memory-track-origins=2 -fno-omit-frame-pointer -g -O2 -pthread -lm"
+        CACHE STRING "Flags used by the C compiler during MemorySanitizer builds."
+        FORCE)
+
+# UndefinedBehaviour
+set(CMAKE_C_FLAGS_UBSAN
+        "-O3 -fsanitize=undefined -Wall -pthread -lm -g -fno-omit-frame-pointer"
+        CACHE STRING "Flags used by the C compiler during UndefinedBehaviourSanitizer builds."
+        FORCE)
+
+
+message("[${PROJECT_TARGET}] Configured build type: ${CMAKE_BUILD_TYPE}")
+
+# ---- SOURCES ---- #
+
+# Include source content
+file(GLOB_RECURSE sourceFiles CONFIGURE_DEPENDS "src/*.c")
+file(GLOB_RECURSE headerFiles CONFIGURE_DEPENDS "src/*.h")
+
+set(includeDirs "")
+foreach(_headerFile ${headerFiles})
+    get_filename_component(_dir ${_headerFile} PATH)
+    list(APPEND includeDirs ${_dir})
+endforeach()
+list(REMOVE_DUPLICATES includeDirs)
+
+# Mark executable
+add_executable(${PROJECT_TARGET} ${sourceFiles})
+target_include_directories(${PROJECT_TARGET} PRIVATE ${includeDirs})
+
+target_link_libraries(${PROJECT_TARGET} m)
+
+# ---- DEFINES ---- #
+
+# target_compile_definitions(
+#         ${PROJECT_TARGET}
+#         PRIVATE
+#         <DEFINES HERE>
+# )
