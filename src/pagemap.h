@@ -10,11 +10,11 @@
 #define _XOPEN_SOURCE 700
 
 typedef struct {
-    uint64_t pfn : 55;
-    unsigned int soft_dirty : 1;
-    unsigned int file_page : 1;
-    unsigned int swapped : 1;
-    unsigned int present : 1;
+    uint64_t pfn: 55;
+    unsigned int soft_dirty: 1;
+    unsigned int file_page: 1;
+    unsigned int swapped: 1;
+    unsigned int present: 1;
 } PagemapEntry;
 
 uintptr_t get_virtual_page_number(uintptr_t virtual_address);
