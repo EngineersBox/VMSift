@@ -60,8 +60,8 @@ message("[${PROJECT_TARGET}] Configured build type: ${CMAKE_BUILD_TYPE}")
 # ---- SOURCES ---- #
 
 # Include source content
-file(GLOB_RECURSE sourceFiles CONFIGURE_DEPENDS "src/*.c")
-file(GLOB_RECURSE headerFiles CONFIGURE_DEPENDS "src/*.h")
+file(GLOB_RECURSE sourceFiles CONFIGURE_DEPENDS "csrc/*.c")
+file(GLOB_RECURSE headerFiles CONFIGURE_DEPENDS "csrc/*.h")
 
 set(includeDirs "")
 foreach(_headerFile ${headerFiles})

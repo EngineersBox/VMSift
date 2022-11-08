@@ -53,3 +53,7 @@ dkms.conf
 
 # Snapshots
 snapshots/
+
+# Added by cargo
+
+/target
