@@ -64,7 +64,12 @@ pub struct PageFrameRegion {
 }
 
 impl PageFrameRegion {
-    pub fn new()
+    pub fn new(value: u64, len: usize) -> Self {
+        return Self {
+            frame: PageFrame::new(value),
+            len,
+        };
+    }
 }
 
 #[derive(Debug)]
