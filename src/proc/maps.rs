@@ -1,8 +1,33 @@
 use std::collections::HashMap;
+use std::error::Error;
+use std::fmt;
 use page_size;
 
 lazy_static!{
     pub static PAGE_SIZE: usize = page_size::get();
+}
+
+#[derive(Debug)]
+struct PermissionsParsingError {
+    details: String
+}
+
+impl PermissionsParsingError {
+    fn new(msg: String) -> PermissionsParsingError {
+        PermissionsParsingError {details: msg.to_string()}
+    }
+}
+
+impl fmt::Display for PermissionsParsingError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f,"{}",self.details)
+    }
+}
+
+impl Error for PermissionsParsingError {
+    fn description(&self) -> &str {
+        &self.details
+    }
 }
 
 bitflags!{
@@ -11,6 +36,28 @@ bitflags!{
         const WRITE = 0x02;
         const EXECUTE = 0x04;
         const SHARED = 0x08;
+    }
+}
+
+impl Permissions {
+    pub fn new(perms: &str) -> Result<Self, Error> {
+        let mut permissions: Self = Permissions::empty();
+        let perms_bytes: &[u8] = perms.as_bytes();
+        if perms_bytes.len() != 4 {
+            return Err(PermissionsParsingError::new(format!("Expected 4 bytes, got {}", perms_bytes.len())));
+        }
+        macro_rules! parse_perm_flag {
+            ($index:ident, $flag:ident,$perm:expr) => {
+                if perms[index] == $flag {
+                    permissions |= $perm;
+                };
+            };
+        }
+        parse_perm_flag!(0, b'r', Permissions::READ);
+        parse_perm_flag!(1, b'w', Permissions::WRITE);
+        parse_perm_flag!(2, b'x', Permissions::EXECUTE);
+        parse_perm_flag!(3, b's', Permissions::SHARED);
+        return Ok(permissions);
     }
 }
 
@@ -80,4 +127,10 @@ pub struct ProcVirtualMapRegion {
     offset: usize,
     physical_regions: HashMap<usize, PageFrameRegion>,
     path: Option<String>,
+}
+
+impl ProcVirtualMapRegion {
+    pub fn new(proc_map: &Vec<&str>) -> Self {
+        todo!{}
+    }
 }
