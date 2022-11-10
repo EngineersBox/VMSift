@@ -14,35 +14,65 @@ bitflags!{
     }
 }
 
-#[derive(Debug,PartialEq)]
-enum Location {
-    RAM(usize),
+#[derive(Debug, PartialEq)]
+pub enum PageLocation {
+    MEMORY(usize),
     SWAP(usize, usize),
     NONE,
 }
 
+macro_rules! bitmatch {
+    ($pattern:literal) => {
+        value if (value & $pattern) != 0
+    };
+}
+
+impl PageLocation {
+    pub fn new(value: u64) -> Self {
+        return match value {
+            bitmatch!(1 << 63) => PageLocation::MEMORY((value & ((1 << 55) - 1)) as usize),
+            bitmatch!(1 << 62) => PageLocation::SWAP(
+                (value & 0b0001_1111) as usize,
+                ((value >> 5) & ((1 << 50) - 1)) as usize
+            ),
+            _ => PageLocation::NONE,
+        };
+    }
+}
+
 #[derive(Debug)]
 pub struct PageFrame {
-    location: Location,
+    location: PageLocation,
     is_file: bool,
-    dirty: bool,
+    is_dirty: bool,
+}
+
+impl PageFrame {
+    pub fn new(value: u64) -> Self {
+        return Self {
+            location: PageLocation::new(value),
+            is_file: value & (1 << 61) != 0,
+            is_dirty: value & (55 << 1) != 0,
+        };
+    }
 }
 
 #[derive(Debug)]
 pub struct PageFrameRegion {
     frame: PageFrame,
-    size: usize,
+    len: usize,
+}
+
+impl PageFrameRegion {
+    pub fn new()
 }
 
 #[derive(Debug)]
-pub struct PageFrameMap(HashMap<usize, PageFrameRegion>);
-
-#[derive(Debug)]
-pub struct MapVirtMemRegion {
-    start: usize,
-    end: usize,
+pub struct ProcVirtualMapRegion {
+    address_start: usize,
+    address_end: usize,
     permissions: Permissions,
     offset: usize,
+    physical_regions: HashMap<usize, PageFrameRegion>,
     path: Option<String>,
-    physical_regions: Option<PageFrameMap>,
 }
